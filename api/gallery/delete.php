@@ -1,6 +1,7 @@
 <?php
 
 require_once "../../config/bootstrap.php";
+require_once "../../helpers/cloudinary.php";
 
 requireAuth();
 
@@ -19,8 +20,8 @@ try {
     $database = new Database();
     $conn = $database->connect();
 
-    // Find the image first
-    $query = "SELECT id, image_path
+    // Find the gallery item
+    $query = "SELECT id, cloudinary_public_id
               FROM gallery
               WHERE id = :id
               LIMIT 1";
@@ -34,7 +35,19 @@ try {
     $image = $stmt->fetch();
 
     if (!$image) {
-        sendResponse(false, "Gallery image not found.", null, 404);
+        sendResponse(
+            false,
+            "Gallery image not found.",
+            null,
+            404
+        );
+    }
+
+    // Delete image from Cloudinary
+    if (!empty($image["cloudinary_public_id"])) {
+        deleteFromCloudinary(
+            $image["cloudinary_public_id"]
+        );
     }
 
     // Delete database record
@@ -46,13 +59,6 @@ try {
     $stmt->execute([
         ":id" => $id
     ]);
-
-    // Delete physical image
-    $filePath = __DIR__ . "/../../" . $image["image_path"];
-
-    if (file_exists($filePath)) {
-        unlink($filePath);
-    }
 
     sendResponse(
         true,

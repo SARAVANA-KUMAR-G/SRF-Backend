@@ -1,7 +1,7 @@
 <?php
 
 require_once "../../config/bootstrap.php";
-require_once "../../helpers/upload.php";
+require_once "../../helpers/cloudinary.php";
 
 requireAuth();
 
@@ -26,7 +26,7 @@ try {
     $conn = $database->connect();
 
     // Find existing gallery item
-    $query = "SELECT id, title, image_path
+    $query = "SELECT id, title, image_url, cloudinary_public_id
               FROM gallery
               WHERE id = :id
               LIMIT 1";
@@ -40,43 +40,56 @@ try {
     $existingImage = $stmt->fetch();
 
     if (!$existingImage) {
-        sendResponse(false, "Gallery image not found.", null, 404);
+        sendResponse(
+            false,
+            "Gallery image not found.",
+            null,
+            404
+        );
     }
 
-    $newImagePath = null;
-
-    // Check whether a new image was uploaded
-    if (
+    /*
+     * Check whether a new image was uploaded.
+     */
+    $hasNewImage = (
         isset($_FILES["image"]) &&
         $_FILES["image"]["error"] !== UPLOAD_ERR_NO_FILE
-    ) {
-        $newImagePath = uploadGalleryImage($_FILES["image"]);
-    }
+    );
 
-    if ($newImagePath !== null) {
+    if ($hasNewImage) {
 
+        // Upload new image first
+        $uploadResult = uploadToCloudinary($_FILES["image"]);
+
+        $newImageUrl = $uploadResult["url"];
+        $newPublicId = $uploadResult["public_id"];
+
+        // Update database
         $query = "UPDATE gallery
                   SET title = :title,
-                      image_path = :image_path
+                      image_url = :image_url,
+                      cloudinary_public_id = :cloudinary_public_id
                   WHERE id = :id";
 
         $stmt = $conn->prepare($query);
 
         $stmt->execute([
             ":title" => $title,
-            ":image_path" => $newImagePath,
+            ":image_url" => $newImageUrl,
+            ":cloudinary_public_id" => $newPublicId,
             ":id" => $id
         ]);
 
-        // Delete old physical image
-        $oldImagePath = __DIR__ . "/../../" . $existingImage["image_path"];
-
-        if (file_exists($oldImagePath)) {
-            unlink($oldImagePath);
+        // Delete old Cloudinary image
+        if (!empty($existingImage["cloudinary_public_id"])) {
+            deleteFromCloudinary(
+                $existingImage["cloudinary_public_id"]
+            );
         }
 
     } else {
 
+        // Update title only
         $query = "UPDATE gallery
                   SET title = :title
                   WHERE id = :id";

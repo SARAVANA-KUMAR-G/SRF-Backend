@@ -17,7 +17,7 @@ try {
     $database = new Database();
     $conn = $database->connect();
 
-    $query = "SELECT id, title, image_path
+    $query = "SELECT id, title, image_url
               FROM gallery
               WHERE id = :id
               LIMIT 1";
@@ -31,17 +31,24 @@ try {
     $image = $stmt->fetch();
 
     if (!$image) {
-        sendResponse(false, "Gallery image not found.", null, 404);
+        sendResponse(
+            false,
+            "Gallery image not found.",
+            null,
+            404
+        );
     }
 
-    $image["imageUrl"] = BASE_URL . $image["image_path"];
-
-    unset($image["image_path"]);
+    $data = [
+        "id" => (int) $image["id"],
+        "title" => $image["title"],
+        "imageUrl" => $image["image_url"]
+    ];
 
     sendResponse(
         true,
         "Gallery image retrieved successfully.",
-        $image,
+        $data,
         200
     );
 

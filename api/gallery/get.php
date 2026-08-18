@@ -11,7 +11,7 @@ try {
     $database = new Database();
     $conn = $database->connect();
 
-    $query = "SELECT id, title, image_path
+    $query = "SELECT id, title, image_url
               FROM gallery
               ORDER BY created_at DESC";
 
@@ -22,25 +22,26 @@ try {
 
     while ($row = $stmt->fetch()) {
 
-        $row["imageUrl"] = BASE_URL . $row["image_path"];
-
-        unset($row["image_path"]);
-
-        $images[] = $row;
+        $images[] = [
+            "id" => (int) $row["id"],
+            "title" => $row["title"],
+            "imageUrl" => $row["image_url"]
+        ];
     }
 
     sendResponse(
-            true,
-            "Gallery retrieved successfully.",
-            $images,
-            200
-        );
+        true,
+        "Gallery retrieved successfully.",
+        $images,
+        200
+    );
+
 } catch (Exception $e) {
 
     sendResponse(
-            false,
-            "Failed to retrieve gallery.",
-            null,
-            500
-        );
+        false,
+        "Failed to retrieve gallery.",
+        null,
+        500
+    );
 }
