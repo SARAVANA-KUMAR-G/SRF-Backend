@@ -12,4 +12,4 @@ if (empty($_ENV["CLOUDINARY_URL"])) {
     throw new Exception("Cloudinary configuration is missing.");
 }
 
-$cloudinary = new Cloudinary($_ENV["CLOUDINARY_URL"]);
+$GLOBALS["cloudinary"] = new Cloudinary($_ENV["CLOUDINARY_URL"]);
