@@ -2,11 +2,31 @@
 
 class Database
 {
-    private $host = "localhost";
-    private $db_name = "rehab_db";
-    private $username = "root";
-    private $password = "SKpubg123";
+    private $host;
+    private $db_name;
+    private $username;
+    private $password;
     private $conn;
+
+    public function __construct()
+    {
+        if (file_exists(__DIR__ . "/../vendor/autoload.php")) {
+            require_once __DIR__ . "/../vendor/autoload.php";
+            if (class_exists('Dotenv\Dotenv')) {
+                try {
+                    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . "/..");
+                    $dotenv->safeLoad();
+                } catch (Exception $e) {
+                    // Ignore if already loaded or missing
+                }
+            }
+        }
+
+        $this->host = $_ENV["DB_HOST"] ?? "127.0.0.1";
+        $this->db_name = $_ENV["DB_DATABASE"] ?? "rehab_db";
+        $this->username = $_ENV["DB_USERNAME"] ?? "root";
+        $this->password = $_ENV["DB_PASSWORD"] ?? "";
+    }
 
     public function connect()
     {

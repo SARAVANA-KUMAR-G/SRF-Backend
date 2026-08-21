@@ -9,8 +9,12 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     sendResponse(false, "Method not allowed.", null, 405);
 }
 
-$id = filter_input(INPUT_POST, "id", FILTER_VALIDATE_INT);
-$title = trim($_POST["title"] ?? "");
+$rawInput = json_decode(file_get_contents("php://input"), true);
+$id = filter_input(INPUT_POST, "id", FILTER_VALIDATE_INT)
+    ?: (isset($rawInput["id"]) ? filter_var($rawInput["id"], FILTER_VALIDATE_INT) : null)
+    ?: filter_input(INPUT_GET, "id", FILTER_VALIDATE_INT);
+
+$title = trim($_POST["title"] ?? ($rawInput["title"] ?? ""));
 
 if (!$id || $id <= 0) {
     sendResponse(false, "A valid image ID is required.", null, 400);
