@@ -24,3 +24,16 @@ CREATE TABLE IF NOT EXISTS `gallery` (
     `cloudinary_public_id` VARCHAR(255) DEFAULT NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+-- Table structure for `professionals`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `professionals` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `name` VARCHAR(255) NOT NULL,
+    `specialty` VARCHAR(500) NOT NULL,
+    `image_url` VARCHAR(500) NOT NULL,
+    `cloudinary_public_id` VARCHAR(255) DEFAULT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+

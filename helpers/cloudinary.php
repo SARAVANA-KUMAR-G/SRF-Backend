@@ -2,7 +2,7 @@
 
 require_once __DIR__ . "/../config/cloudinary.php";
 
-function uploadToCloudinary($file)
+function uploadToCloudinary($file, $folder = "rehab/gallery")
 {
     if (!isset($file) || $file["error"] !== UPLOAD_ERR_OK) {
         throw new Exception("Please select an image.");
@@ -39,7 +39,7 @@ function uploadToCloudinary($file)
         ->upload(
             $file["tmp_name"],
             [
-                "folder" => "rehab/gallery"
+                "folder" => $folder
             ]
         );
 
